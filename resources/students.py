@@ -1,29 +1,10 @@
 from flask_restful import Resource, reqparse
+from models.student import StudentModel
 
-students = [
-    {
-        'id': 1,
-        'name': "Gustavo Belfort",
-        'intra_id': "gus",
-        'projects': [
-            "42cursus_libft",
-            "42cursus_get-next-line",
-            "42cursus_ft-printf",
-        ]
-    },
-    {
-        'id': 2,
-        'name': "Guilhemar Caixeta",
-        'intra_id': "guiga",
-        'projects': [
-            "cub3d",
-        ]
-    }
-]
 
 class Students(Resource):
 	def get(self):
-		return students
+		return {'students': [student.json() for student in StudentModel.query.all()]}
 
 class Student(Resource):
 
@@ -32,19 +13,52 @@ class Student(Resource):
 	st_arg.add_argument('intra_id')
 	# st_arg.add_argument('projects')
 
-
-	def get(self, id):
+	def find_student(id):
 		for student in students:
 			if student['id'] == id:
 				return student
+		return None
+
+	def get(self, id):
+		student_found = StudentModel.find_student(id)
+		if student_found:
+			return student_found.json(), 200
 		return {'messsage': 'Student Not found'}, 404
 
 	def post(self, id):
+		if StudentModel.find_student(id):
+			return {'messsage': 'Student alredy exists.'}, 401
 		data = Student.st_arg.parse_args()
+		new_student =  StudentModel(id, **data)
+		try:
+			new_student.save_student()
+		except:
+			return {'message': 'An internal error ocurred trying to save student.'}, 500
+		return  new_student.json(), 201
 
-		new_student = {'id':id, **data}
+	def put(self, id):
+		data = Student.st_arg.parse_args()
+		student_found = StudentModel.find_student(id)
+		if student_found:
+			student_found.update_student(**data)
+			try:
+				student_found.save_student()
+			except:
+				return {'message': 'An internal error ocurred trying to save student.'}, 500
+			return  student_found.json(), 200
+		new_student = { 'id': id, **data }
+		try:
+			student_found.save_student()
+		except:
+			return {'message': 'An internal error ocurred trying to save student.'}, 500
+		return new_student.json(), 201
 
-		students.append(new_student)
-		return new_student, 201
-
-	
+	def delete(self, id):
+		student_found = StudentModel.find_student(id)
+		if student_found:
+			try:
+				student_found.delete_student()
+			except:
+				return {'message': 'An internal error ocurred trying to save student.'}, 500
+			return {'message': 'student deleted.'}
+		return {'message': 'student not found.'}, 404
