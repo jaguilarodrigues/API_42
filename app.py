@@ -18,12 +18,17 @@ def students():
 	resp = dumps(students)
 	return resp
 
+@app.route('/students?projects=<projectname>')
+def students_by_project():
+	student_fil = mongo.db.student.find({'projects': projectname})
+	resp = dumps(student_fil)
+	return resp
+
 @app.route('/students/<id>')
 def student(id):
 	student = mongo.db.student.find_one({'_id': ObjectId(id)})
 	resp = dumps(student)
 	return resp
-
 
 @app.route('/students', methods=['POST'])
 def add_student():
@@ -32,18 +37,18 @@ def add_student():
 	_intra_id = _json['intra_id']
 	_projects = _json['projects']
 
-	id = mongo.db.student.insert_one({'name':_name, 'intra_id': _intra_id, 'projects': _projects})
+	id = mongo.db.student.insert_one({'name':_name, 'intra_id': _intra_id, 'projects': _projects}).inserted_id
+	student = mongo.db.student.find_one({'_id': id})
+	resp = dumps(student)
 
-	resp = jsonify("Student create sucessfuly")
-	resp.status_code = 201
+	return resp, 201
 
-	return resp
-
-@app.route('/students/<id>', methods=['DELETE'])
+@app.route('/students/:<id>', methods=['DELETE'])
 def del_student(id):
 	mongo.db.student.delete_one({'_id': ObjectId(id)})
-	resp = jsonify("Student deleted sucessfuly")
-	resp.status_code = 200
+	student = mongo.db.student.find_one({'_id': id})
+	if not student:
+		resp = dumps({})
 	return resp
 
 @app.route('/students/<id>', methods=['PUT'])
@@ -60,4 +65,5 @@ def update_student(id):
 	return resp
 
 if __name__ == "__main__":
+	# app.run(host='0.0.0.0', port=3000)
 	app.run(debug=True)
