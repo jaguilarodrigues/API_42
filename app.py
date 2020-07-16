@@ -14,15 +14,15 @@ mongo = PyMongo(app)
 
 @app.route('/students')
 def students():
+	if "projects" in request.args:
+		project = request.args['projects']
+		student_fil = mongo.db.student.find({'projects': project})
+		resp = dumps(student_fil)
+		return resp
 	students = mongo.db.student.find()
 	resp = dumps(students)
 	return resp
 
-@app.route('/students?projects=<project>')
-def students_by_project():
-	student_fil = mongo.db.student.find({"projects": project})
-	resp = dumps(student_fil)
-	return resp
 
 @app.route('/students/<id>')
 def student(id):
@@ -65,5 +65,5 @@ def update_student(id):
 	return resp
 
 if __name__ == "__main__":
-	app.run(host='0.0.0.0', port=3000)
-	# app.run(debug=True)
+	# app.run(host='0.0.0.0', port=3000)
+	app.run(debug=True)
