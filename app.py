@@ -18,9 +18,9 @@ def students():
 	resp = dumps(students)
 	return resp
 
-@app.route('/students?projects=<projectname>')
+@app.route('/students?projects=<project>')
 def students_by_project():
-	student_fil = mongo.db.student.find({'projects': projectname})
+	student_fil = mongo.db.student.find({"projects": project})
 	resp = dumps(student_fil)
 	return resp
 

@@ -7,6 +7,16 @@ Stack utilisada foi Python, Flask e MongoDB
 
 ---------------
 
+## Ambientação
+
+-------
+
+Instalação das dependencias
+
+`pip install -r requirements.txt`
+
+---------------
+
 ## Requisitos
 
 -------
